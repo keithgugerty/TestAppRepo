@@ -26,8 +26,8 @@ public class TankMode1 extends OpMode {
     @Override
     public void loop() {
 
-        double leftY = -gamepad1.left_stick_y;
-        double rightY = -gamepad1.right_stick_y;
+        double leftY = -gamepad1.left_stick_y/2;
+        double rightY = -gamepad1.right_stick_y/2;
 
         double leftSquaredVal = leftY * leftY;
         double rightSquaredVal = rightY * rightY;

@@ -4,12 +4,14 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
         import com.qualcomm.robotcore.hardware.DcMotor;
         import com.qualcomm.robotcore.hardware.Servo;
         import com.qualcomm.robotcore.hardware.CompassSensor;
-        import com.qualcomm.robotcore.*;
+        import com.qualcomm.robotcore.hardware.GyroSensor;
+        import com.qualcomm.robotcore.hardware.ColorSensor;
+        import com.qualcomm.robotcore.util.Range;
         import com.qualcomm.ftccommon.*;
         import java.lang.Exception;
 
 
-public class TankMode2 extends OpMode {
+public class TankMode2 extends OpMode{
 // Declare Drive motor objects
     private DcMotor leftMotorFront;
     private DcMotor rightMotorFront;
@@ -18,9 +20,9 @@ public class TankMode2 extends OpMode {
     private Servo claw;
     private Servo lift;
 // Declare Sensors
-    private compassSensor compass;
-    private gyroSensor RobotGyro;
-    private colorSensor rgbSensor;
+    private CompassSensor compass;
+    private GyroSensor RobotGyro;
+    private ColorSensor rgbSensor;
 
 
     @Override
@@ -30,14 +32,10 @@ public class TankMode2 extends OpMode {
             leftMotorFront = hardwareMap.dcMotor.get("left_drive_front");
             rightMotorFront = hardwareMap.dcMotor.get("right_drive_front");
             rightMotorFront.setDirection(DcMotor.Direction.REVERSE);
-        } catch (RobotCoreException rce) {
-            DbgLog.msg("RobotCoreException Error initializing DCMotors");
-            DbgLog.error(rce.getMessage);
-            DbgLog.LogStacktrace(rce);
         } catch (Exception e){
             DbgLog.msg("RobotCoreException Error initializing DCMotors");
-            DbgLog.error(e.getMessage);
-            DbgLog.LogStacktrace(e);
+            DbgLog.error(e.getMessage());
+            DbgLog.logStacktrace(e);
         }
 
 
@@ -46,14 +44,10 @@ public class TankMode2 extends OpMode {
             arm = hardwareMap.servo.get("Arm");
             claw = hardwareMap.servo.get("Claw");
             lift = hardwareMap.servo.get("Lift");
-        } catch (RobotCoreException rce) {
-            DbgLog.msg("RobotCoreException Error initializing Servos");
-            DbgLog.error(rce.getMessage);
-            DbgLog.LogStacktrace(rce);
         } catch (Exception e){
             DbgLog.msg("RobotCoreException Error initializing Servos");
-            DbgLog.error(e.getMessage);
-            DbgLog.LogStacktrace(e);
+            DbgLog.error(e.getMessage());
+            DbgLog.logStacktrace(e);
         }
 
 
@@ -61,15 +55,11 @@ public class TankMode2 extends OpMode {
         try{
             compass= hardwareMap.compassSensor.get("Compass");
             RobotGyro= hardwareMap.gyroSensor.get("Gyro");
-            rgbSensor= hardwareMap.rgbSensor.get("Color");
-        } catch (RobotCoreException rce) {
-            DbgLog.msg("RobotCoreException Error initializing Servos");
-            DbgLog.error(rce.getMessage);
-            DbgLog.LogStacktrace(rce);
+            rgbSensor= hardwareMap.colorSensor.get("Color");
         } catch (Exception e){
             DbgLog.msg("RobotCoreException Error initializing Servos");
-            DbgLog.error(e.getMessage);
-            DbgLog.LogStacktrace(e);
+            DbgLog.error(e.getMessage());
+            DbgLog.logStacktrace(e);
         }
 
 // Define Controls
@@ -151,12 +141,58 @@ public class TankMode2 extends OpMode {
 
         // scale the joystick value to make it easier to control
         // the robot more precisely at slower speeds.
-        right = (float)scaleInput(right);
-        left =  (float)scaleInput(left);
+        right = scaleInput(right);
+        left = scaleInput(left);
 
         // write the values to the motors
-        motorRight.setPower(right);
-        motorLeft.setPower(left);
+        rightMotorFront.setPower(right);
+        leftMotorFront.setPower(left);
     }
+
+    /**
+     * Scale the joystick input using a nonlinear algorithm.
+     */
+    float scaleInput (float p_power)
+    {
+        //
+        // Assume no scaling.
+        //
+        float l_scale = 0.0f;
+
+        //
+        // Ensure the values are legal.
+        //
+        float l_power = Range.clip (p_power, -1, 1);
+
+        float[] l_array =
+                { 0.00f, 0.05f, 0.09f, 0.10f, 0.12f
+                        , 0.15f, 0.18f, 0.24f, 0.30f, 0.36f
+                        , 0.43f, 0.50f, 0.60f, 0.72f, 0.85f
+                        , 1.00f, 1.00f
+                };
+
+        //
+        // Get the corresponding index for the specified argument/parameter.
+        //
+        int l_index = (int)(l_power * 16.0);
+        if (l_index < 0)
+        {
+            l_index = -l_index;
+        }
+        else if (l_index > 16)
+        {
+            l_index = 16;
+        }
+        if (l_power < 0)
+        {
+            l_scale = -l_array[l_index];
+        }
+        else
+        {
+            l_scale = l_array[l_index];
+        }
+        return l_scale;
+
+    } // scale_motor_power
 }
 

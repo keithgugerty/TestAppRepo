@@ -70,10 +70,10 @@ public class TankMode2 extends OpMode{
     @Override
     public void loop() {
         dual_stick_drive();
-
-        //add connectivity test
-        power_zero();
-
+        //connectivity test
+        if (gamepad1 == null) {
+            power_zero();
+        }
 
     }
 
@@ -194,5 +194,13 @@ public class TankMode2 extends OpMode{
         return l_scale;
 
     } // scale_motor_power
+
+    /**
+     *
+     */
+    public String check_color() {
+        //assign color value
+        return check_color();
+    }
 }
 
